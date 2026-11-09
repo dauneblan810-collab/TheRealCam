@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "therealcam-trainer"
+version = "0.1.0"
+description = "Тренер моделей .trcm для камеры TheRealCam: обучение с нуля только на своём датасете"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.23",
+    "pillow>=9.0",
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+build = ["pyinstaller>=6"]
+
+[project.scripts]
+therealcam-trainer = "therealcam_trainer.cli:main"
+therealcam-trainer-gui = "therealcam_trainer.gui:main"
+
+[tool.setuptools]
+packages = ["therealcam_trainer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
