@@ -27,7 +27,7 @@ from .dataset import (
 from .errors import TrainError
 from .export import export_trcnet, extend_classes, load_trcnet, refit_feature_norm, refit_param_norm
 from .model import DEFAULT_DROPOUT, DEFAULT_HIDDEN, DEFAULT_WIDTHS, ModelSpec, TrcNet, per_image_normalize
-from .schema import FOCUS_PARAM, MIN_SAMPLES, PARAM_NAMES_V1
+from .schema import FOCUS_PARAM, MIN_SAMPLES
 
 SCRATCH_EPOCHS = 60
 SCRATCH_LR = 2e-3

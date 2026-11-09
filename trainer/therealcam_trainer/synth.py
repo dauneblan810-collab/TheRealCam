@@ -7,7 +7,6 @@ SYNTHETIC, labels.note, файл SYNTHETIC_DATASET.txt).
 
 from __future__ import annotations
 
-import io
 import json
 import math
 import os
