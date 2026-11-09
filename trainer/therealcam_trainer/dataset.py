@@ -196,6 +196,8 @@ def _has_samples(d: Path) -> bool:
 
 def _find_folder_root(path: Path) -> Path | None:
     """Ищет в ширину папку D с ``D/samples/*/meta.json`` (сама папка, TheRealCam/, любая выше)."""
+    if path.name == "samples" and _has_samples(path.parent):  # указали саму папку samples/
+        return path.parent
     level = [path]
     visited = 0
     for _ in range(_SEARCH_MAX_DEPTH + 1):

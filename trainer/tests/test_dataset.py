@@ -42,6 +42,7 @@ def test_load_folder_variants(synth_dir, synth_ds):
     ids = [s.sample_id for s in synth_ds.samples]
     assert len(ids) == 200 and synth_ds.kind == "folder"
     assert [s.sample_id for s in load_dataset(synth_dir / "dataset").samples] == ids
+    assert [s.sample_id for s in load_dataset(synth_dir / "dataset" / "samples").samples] == ids
     # Папка выше: <копия телефона>/Android/data/TheRealCam/dataset
     holder = synth_dir.parent / (synth_dir.name + "_holder")
     if not holder.exists():
