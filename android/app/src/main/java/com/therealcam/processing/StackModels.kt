@@ -9,7 +9,7 @@ data class StackFrame(
     val index: Int,
     val exposureNs: Long?,
     val iso: Int?,
-    /** Gyro RMS |ω| during this frame's exposure, rad/s; null = unknown. */
+    /** Gyro RMS |ω| during this frame's exposure, rad/s; null (or NaN) = unknown, never rejected. */
     val motionRms: Double?,
 )
 

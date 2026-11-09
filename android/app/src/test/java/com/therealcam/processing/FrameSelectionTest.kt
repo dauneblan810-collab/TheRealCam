@@ -44,13 +44,14 @@ class FrameSelectionTest {
 
     @Test
     fun motionRejectedUnlessLightenOrDisabled() {
-        val s = stats(means = List(5) { 30.0 }, motion = listOf(0.01, 0.2, null, 0.031, 0.0))
+        val s = stats(means = List(6) { 30.0 }, motion = listOf(0.01, 0.2, null, 0.031, 0.0, Double.NaN))
         val sel = select(s)
         assertEquals(RejectReason.MOTION, sel.reasons[1])
         assertEquals(RejectReason.MOTION, sel.reasons[3])
         assertNull(sel.reasons[2]) // unknown motion is not a reason to reject
-        assertEquals(5, select(s, mode = StackMode.LIGHTEN).accepted.size)
-        assertEquals(5, select(s, reject = false).accepted.size)
+        assertNull(sel.reasons[5]) // SensorHub reports NaN without gyro samples
+        assertEquals(6, select(s, mode = StackMode.LIGHTEN).accepted.size)
+        assertEquals(6, select(s, reject = false).accepted.size)
     }
 
     @Test
