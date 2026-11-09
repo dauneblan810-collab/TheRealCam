@@ -2,6 +2,7 @@ package com.therealcam
 
 import android.content.Context
 import androidx.room.Room
+import com.therealcam.ai.ModelRepository
 import com.therealcam.core.AppPaths
 import com.therealcam.data.CaptureRepository
 import com.therealcam.data.CategoryRepository
@@ -27,4 +28,5 @@ class AppGraph(val context: Context) {
     val categories = CategoryRepository(db, dataset, captures)
     val sensors = SensorHub(context)
     val location = LocationTracker(context)
+    val models = ModelRepository(context, paths, settings, scope)
 }
