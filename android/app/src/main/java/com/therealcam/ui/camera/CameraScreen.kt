@@ -207,7 +207,13 @@ fun CameraScreen(
                                 modifier = Modifier.fillMaxSize().rotate(rot))
                         }
                     }
-                    Shutter(busy, countdown != null, onClick = { if (countdown != null) vm.cancelShot() else vm.onShutter() })
+                    Shutter(busy, countdown != null, onClick = {
+                        when {
+                            busy != null -> vm.requestStop()
+                            countdown != null -> vm.cancelShot()
+                            else -> vm.onShutter()
+                        }
+                    })
                     Box(
                         Modifier.size(52.dp).clip(CircleShape).background(RealColors.SurfaceHigh)
                             .clickable(enabled = busy == null) { vm.switchCamera() },
@@ -352,7 +358,7 @@ private fun BusyOverlay(p: ShotRunner.Progress, modifier: Modifier) {
 private fun Shutter(busy: ShotRunner.Progress?, counting: Boolean, onClick: () -> Unit) {
     Box(
         Modifier.size(78.dp).clip(CircleShape).border(4.dp, Color.White, CircleShape)
-            .clickable(enabled = busy == null, onClick = onClick),
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -360,6 +366,9 @@ private fun Shutter(busy: ShotRunner.Progress?, counting: Boolean, onClick: () -
                 .background(if (busy != null) RealColors.SurfaceHigh else if (counting) RealColors.Bad else Color.White),
         )
         if (busy != null) CircularProgressIndicator(color = RealColors.Accent, modifier = Modifier.size(70.dp), strokeWidth = 3.dp)
+        if (busy is ShotRunner.Progress.Capturing && busy.total > 1) {
+            Box(Modifier.size(22.dp).clip(RoundedCornerShape(4.dp)).background(RealColors.Bad))
+        }
     }
 }
 

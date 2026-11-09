@@ -80,7 +80,8 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
         val motion: MetaBuilder.ExposureMotion,
     )
 
-    suspend fun run(plan: Plan, env: Env, onProgress: (Progress) -> Unit): CaptureEntity {
+    /** [stop] is polled between frames of a series: when true the frames taken so far are merged. */
+    suspend fun run(plan: Plan, env: Env, stop: () -> Boolean = { false }, onProgress: (Progress) -> Unit): CaptureEntity {
         val timeMs = System.currentTimeMillis()
         val sampleId = Ids.newSampleId(timeMs)
         val orientation = CameraController.jpegOrientation(env.caps, env.motion.deviceOrientation)
@@ -116,6 +117,7 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
         val records = ArrayList<FrameRecord>(frames)
         var settings = plan.settings
         for (i in 0 until frames) {
+            if (i > 0 && stop()) break
             onProgress(Progress.Capturing(i + 1, frames, settings.exposureNs))
             val frameTime = System.currentTimeMillis()
             val f = camera.capture(request.copy(settings = settings))
@@ -126,7 +128,8 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
             if (i == 0 && frames >= 3) settings = adaptAfterFirstFrame(settings, plan.profile, file, env.caps)
         }
 
-        val usable = records.filter { it.settings == settings }
+        val captured = records.size
+        val usable = records.filter { it.settings == settings }.ifEmpty { records }
         onProgress(Progress.Merging(0f))
         val resultFile = File(dir, "result.jpg")
         val stack = StackProcessor().process(
@@ -141,7 +144,7 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
             onProgress = { onProgress(Progress.Merging(it)) },
         )
         onProgress(Progress.Saving)
-        val uri = g.photos.save(resultFile, "${baseName}_S$frames.jpg", env.app.saveToGallery)
+        val uri = g.photos.save(resultFile, "${baseName}_S$captured.jpg", env.app.saveToGallery)
         val (rw, rh) = BitmapFactory.Options().apply { inJustDecodeBounds = true }.also { BitmapFactory.decodeFile(resultFile.path, it) }
             .let { it.outWidth to it.outHeight }
 
@@ -161,11 +164,11 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
         for (r in records) {
             val (w, h) = ImageIo.jpegSize(r.frame.jpeg)
             g.captures.insert(
-                entity(r.id, r.timeMs, Roles.FRAME, seriesId, r.index, frames, plan, Uri.fromFile(r.file), w, h, orientation, r.frame, location, ds),
+                entity(r.id, r.timeMs, Roles.FRAME, seriesId, r.index, captured, plan, Uri.fromFile(r.file), w, h, orientation, r.frame, location, ds),
             )
         }
         val last = records.last()
-        val result = entity(sampleId, timeMs, Roles.RESULT, seriesId, -1, frames, plan, uri, rw, rh, orientation, last.frame, location, ds)
+        val result = entity(sampleId, timeMs, Roles.RESULT, seriesId, -1, captured, plan, uri, rw, rh, orientation, last.frame, location, ds)
         g.captures.insert(result)
         resultFile.delete()
 
@@ -175,14 +178,14 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
                 writeSample(
                     id = r.id, timeMs = r.timeMs, plan = plan.copy(settings = r.settings), env = env, frame = r.frame,
                     photoRole = Roles.FRAME, fileName = r.file.name,
-                    series = SeriesInfo(seriesId, "frame", r.index, frames, plan.profile.key, plan.settings.stackMode.key),
+                    series = SeriesInfo(seriesId, "frame", r.index, captured, plan.profile.key, plan.settings.stackMode.key),
                     width = w, height = h, orientation = orientation, location = location, image = { r.file.inputStream() },
                 )
             }
             writeSample(
                 id = sampleId, timeMs = timeMs, plan = plan.copy(settings = settings), env = env, frame = last.frame,
-                photoRole = Roles.RESULT, fileName = "${baseName}_S$frames.jpg",
-                series = SeriesInfo(seriesId, "result", -1, frames, plan.profile.key, plan.settings.stackMode.key, frameInfos),
+                photoRole = Roles.RESULT, fileName = "${baseName}_S$captured.jpg",
+                series = SeriesInfo(seriesId, "result", -1, captured, plan.profile.key, plan.settings.stackMode.key, frameInfos),
                 width = rw, height = rh, orientation = orientation, location = location,
                 image = { g.photos.open(uri) },
                 exposureStartRt = records.first().frame.exposureStartRt,

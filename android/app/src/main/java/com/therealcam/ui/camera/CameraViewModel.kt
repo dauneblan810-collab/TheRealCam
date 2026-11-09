@@ -350,7 +350,8 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
             _busy.value = ShotRunner.Progress.Capturing(0, plan.settings.frames, plan.settings.exposureNs)
             try {
                 val env = ShotRunner.Env(caps, camera.preview.value, scene, features, motion.value, location.value, app)
-                val e = runner.run(plan, env) { _busy.value = it }
+                stopRequested = false
+                val e = runner.run(plan, env, stop = { stopRequested }) { _busy.value = it }
                 if (app.datasetMode && app.askRating) _ratingFor.value = e.id
             } catch (t: Throwable) {
                 if (t !is kotlinx.coroutines.CancellationException) _message.value = "Не удалось снять: ${t.message}"
@@ -358,6 +359,17 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
                 _busy.value = null
                 applyPreviewSettings()
             }
+        }
+    }
+
+    @Volatile private var stopRequested = false
+
+    /** Second press during a series: stop after the current frame and merge what was taken. */
+    fun requestStop() {
+        val b = _busy.value
+        if (b is ShotRunner.Progress.Capturing && b.total > 1 && !stopRequested) {
+            stopRequested = true
+            _message.value = "Останавливаю серию после текущего кадра…"
         }
     }
 
