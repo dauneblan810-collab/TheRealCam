@@ -76,7 +76,8 @@ class DatasetManager(private val paths: AppPaths) {
 
     private fun writeMeta(dir: File, meta: SampleMeta) {
         val tmp = File(dir, "meta.json.tmp")
-        tmp.writeText(PrettySnakeJson.encodeToString(SampleMeta.serializer(), meta))
+        // Compact: the motion arrays would otherwise become thousands of lines.
+        tmp.writeText(SnakeJson.encodeToString(SampleMeta.serializer(), meta))
         val dst = File(dir, "meta.json")
         if (!tmp.renameTo(dst)) {
             dst.delete()

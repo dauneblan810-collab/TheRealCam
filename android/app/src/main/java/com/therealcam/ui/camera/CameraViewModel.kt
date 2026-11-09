@@ -2,6 +2,7 @@ package com.therealcam.ui.camera
 
 import android.app.Application
 import android.graphics.SurfaceTexture
+import android.media.MediaActionSound
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.therealcam.ai.CapturePlan
@@ -52,6 +53,7 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
     private val g = app.appGraph
     val camera = CameraController(app)
     private val runner = ShotRunner(g, camera)
+    private val shutterSound = MediaActionSound().apply { load(MediaActionSound.SHUTTER_CLICK) }
 
     val settings: StateFlow<AppSettings> = g.settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
     val categories: StateFlow<List<CategoryEntity>> = g.categories.all.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -158,6 +160,7 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         camera.release()
+        shutterSound.release()
     }
 
     // ------------------------------------------------------------ controls
@@ -351,7 +354,8 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val env = ShotRunner.Env(caps, camera.preview.value, scene, features, motion.value, location.value, app)
                 stopRequested = false
-                val e = runner.run(plan, env, stop = { stopRequested }) { _busy.value = it }
+                shutterSound.play(MediaActionSound.SHUTTER_CLICK)
+                val e = withContext(Dispatchers.Default) { runner.run(plan, env, stop = { stopRequested }) { _busy.value = it } }
                 if (app.datasetMode && app.askRating) _ratingFor.value = e.id
             } catch (t: Throwable) {
                 if (t !is kotlinx.coroutines.CancellationException) _message.value = "Не удалось снять: ${t.message}"
