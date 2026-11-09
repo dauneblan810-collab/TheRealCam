@@ -156,7 +156,7 @@ class ShotRunner(private val g: AppGraph, private val camera: CameraController) 
                 accepted = rep?.accepted ?: false,
                 rejectReason = rep?.rejectReason ?: if (r.settings != settings) "metering" else null,
                 offsetPx = rep?.let { listOf(it.dx, it.dy) }, motionRms = r.motion.rms,
-                sharpness = rep?.sharpness, meanLuma = rep?.meanLuma,
+                sharpness = rep?.sharpness, meanLuma = rep?.meanLuma?.div(255.0),
             )
         }
 

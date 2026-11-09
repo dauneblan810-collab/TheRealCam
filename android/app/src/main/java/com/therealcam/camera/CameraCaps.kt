@@ -108,11 +108,16 @@ data class CameraCaps(
 
         private fun aspect(s: Size) = s.width.toDouble() / s.height
 
-        /** Largest 4:3 JPEG size (most sensors are 4:3), else the largest overall. */
+        /** Upper bound for stills: binned ~12–16 MP modes are faster and cleaner than 48/50 MP remosaic, and series stay in memory. */
+        const val MAX_JPEG_PIXELS = 17_000_000L
+
+        /** Largest 4:3 JPEG size (most sensors are 4:3) not above [MAX_JPEG_PIXELS]. */
         fun chooseJpegSize(sizes: List<Size>): Size {
             require(sizes.isNotEmpty()) { "No JPEG sizes" }
-            val fourThree = sizes.filter { abs(aspect(it) - 4.0 / 3.0) < 0.02 }
-            return (fourThree.ifEmpty { sizes }).maxBy { it.width.toLong() * it.height }
+            val fourThree = sizes.filter { abs(aspect(it) - 4.0 / 3.0) < 0.02 }.ifEmpty { sizes }
+            val fitting = fourThree.filter { it.width.toLong() * it.height <= MAX_JPEG_PIXELS }
+            return fitting.maxByOrNull { it.width.toLong() * it.height }
+                ?: fourThree.minBy { it.width.toLong() * it.height }
         }
 
         /** Largest preview size with the JPEG aspect ratio that is not bigger than 1920×1440. */

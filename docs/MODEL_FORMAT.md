@@ -156,8 +156,8 @@ Kotlin (`android/app/src/main/java/com/therealcam/ai/engine`), тренер — 
 | `astro` | `stars`, `milky_way`, `night_sky`, `aurora` |
 | `lunar` | `moon` |
 | `sky` | `clouds`, `sky`, `sunset`, `sun` |
-| `night` | `city_night`, `fireworks`, `concert`, `fire`, `lightning` |
-| `trails` | `light_trails`, `star_trails` |
+| `night` | `city_night`, `concert`, `fire` |
+| `trails` | `light_trails`, `star_trails`, `fireworks`, `lightning` |
 | `long` | `waterfall`, `water` |
 | `action` | `sport`, `pet`, `bird`, `car`, `kids` |
 | `landscape` | `landscape`, `mountains`, `forest`, `snow`, `city`, `architecture` |
