@@ -1,0 +1,34 @@
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.cxx/
+captures/
+*.apk
+*.aab
+!**/testdata/**/*.apk
+*.keystore
+*.jks
+
+# Kotlin
+.kotlin/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+dist/
+trainer/build/
+trainer/runs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Platform
+.hoplite/
