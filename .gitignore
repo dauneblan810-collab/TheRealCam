@@ -32,3 +32,4 @@ Thumbs.db
 
 # Platform
 .hoplite/
+!android/app/debug.keystore
