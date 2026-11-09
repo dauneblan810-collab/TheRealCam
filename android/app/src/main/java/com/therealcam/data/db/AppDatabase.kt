@@ -105,8 +105,8 @@ interface CaptureDao {
     @Query("DELETE FROM captures WHERE id = :id")
     suspend fun delete(id: String)
 
-    @Query("UPDATE captures SET categoryId = NULL, inDataset = 0 WHERE categoryId = :categoryId")
-    suspend fun clearCategory(categoryId: String)
+    @Query("SELECT * FROM captures WHERE categoryId = :categoryId")
+    suspend fun byCategory(categoryId: String): List<CaptureEntity>
 }
 
 @Dao
